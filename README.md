@@ -8,8 +8,6 @@
 
 ## Running docker 
 - docker build --no-cache -t url-collector .
-- docker run -p 8080:8080/tcp -it url-collector
-OR
 - docker run --env-file ./env.list -p 8080:8081/tcp -it url-collector
 
 ## Example
