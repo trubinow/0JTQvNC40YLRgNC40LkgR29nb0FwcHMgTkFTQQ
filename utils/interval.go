@@ -24,12 +24,12 @@ func init() {
 
 //Interval returns dates slice in string format between start-date and end-date. Date output and input format is 2006-01-02
 func Interval(start string, end string) ([]string, error) {
-	startDate, err := time.Parse("2006-01-02", start)
+	startDate, err := time.Parse("2006-1-2", start)
 	if err != nil {
 		return []string{}, ErrStartDateConversion
 	}
 
-	endDate, err := time.Parse("2006-01-02", end)
+	endDate, err := time.Parse("2006-1-2", end)
 	if err != nil {
 		return []string{}, ErrEndDateConversion
 	}

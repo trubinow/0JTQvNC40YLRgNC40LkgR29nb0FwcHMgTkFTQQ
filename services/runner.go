@@ -39,7 +39,7 @@ func (r *Runner) SetBlocked(b bool) {
 
 //Run starts parse process
 func (r *Runner) Run(dates []string) ([]string, error) {
-
+	r.SetBlocked(false)
 	wg := sync.WaitGroup{}
 	var images []string
 	for _, d := range dates {

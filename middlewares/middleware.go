@@ -29,7 +29,7 @@ type Request struct {
 func (m *Middleware) ValidateParameters() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path == "pictures" {
+			if r.URL.Path == "/pictures" {
 				startList, ok := r.URL.Query()["start_date"]
 				if !ok || len(startList[0]) < 1 {
 					w.WriteHeader(400)
