@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"nasa/helpers"
-	"nasa/interfaces"
+	"nasa/handlers"
+	"nasa/middlewares"
 	"nasa/parsers"
+	"nasa/services"
+	"nasa/utils"
 	"net/http"
 	"strconv"
 	"time"
@@ -18,10 +20,10 @@ func main() {
 		"cmd": "url-collector",
 	})
 
-	apiKey := helpers.GetEnv("API_KEY", "DEMO_KEY")
-	apiUrlTemplate := helpers.GetEnv("API_URL", "https://api.nasa.gov/planetary/apod?api_key=%s&date=%s")
-	concurrentRequests := helpers.GetEnv("CONCURRENT_REQUESTS", "5")
-	port := helpers.GetEnv("PORT", "8080")
+	apiKey := utils.GetEnv("API_KEY", "DEMO_KEY")
+	apiUrlTemplate := utils.GetEnv("API_URL", "https://api.nasa.gov/planetary/apod?api_key=%s&date=%s")
+	concurrentRequests := utils.GetEnv("CONCURRENT_REQUESTS", "5")
+	port := utils.GetEnv("PORT", "8080")
 
 	var concurrentLimit int64
 	if v, err := strconv.ParseInt(concurrentRequests, 10, 32); err == nil && v > 0 {
@@ -30,15 +32,18 @@ func main() {
 		logger.Fatalf("CONCURRENT_REQUESTS conversion to int error(%v) or equal to 0", err)
 	}
 
-	concurrent := make(chan int, concurrentLimit)
-	var parser interfaces.Parser
 	var httpClient = &http.Client{}
-	parser = parsers.NewNasaParser(apiKey, apiUrlTemplate, httpClient)
+	concurrent := make(chan struct{}, concurrentLimit)
+	parser := parsers.NewNasaParser(apiKey, apiUrlTemplate, httpClient)
+	runner := services.NewRunner(contextLogger, concurrent, parser)
+	handler := handlers.NewHandler(contextLogger, runner)
+	mw := middlewares.NewMiddleware(contextLogger)
 
-	handler := NewHandler(contextLogger, &concurrent, parser)
 	r := mux.NewRouter()
+	r.Use(mw.ValidateParameters())
 	r.HandleFunc("/status", handler.Status)
 	r.HandleFunc("/pictures", handler.Pictures)
+
 
 	srv := &http.Server{
 		Handler:      r,
@@ -49,6 +54,4 @@ func main() {
 
 	logger.Infof("Server is listening port: %s", port)
 	logger.Warn(srv.ListenAndServe())
-
-	return
 }

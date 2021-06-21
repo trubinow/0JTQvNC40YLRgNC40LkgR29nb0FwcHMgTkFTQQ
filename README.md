@@ -8,7 +8,7 @@
 
 ## Running docker 
 - docker build --no-cache -t url-collector .
-- docker run --env-file ./env.list -p 8080:8081/tcp -it url-collector
+- docker run --env-file ./env.list -p 8080:8080/tcp -it url-collector
 
 ## Example
 http://localhost:8080/pictures?start_date=2021-06-16&end_date=2021-06-18

@@ -4,29 +4,50 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
-	"nasa/interfaces"
-	"nasa/models"
+	"net/http"
 )
 
-type NasaParser struct {
-	apiKey string
-	apiURL string
-	httpClient  interfaces.HTTPClient
+// HTTPClient interface
+type HTTPClient interface {
+	Get(url string) (*http.Response, error)
 }
 
-var OverRateLimit = errors.New("over rate limit exceeded")
+type NasaParser struct {
+	logger *logrus.Entry
+	apiKey string
+	apiURL string
+	httpClient  HTTPClient
+}
 
-func NewNasaParser(apiKey string, apiTemplateURL string, httpClient interfaces.HTTPClient) NasaParser {
+var (
+	ErrOverRateLimit = errors.New("over rate limit exceeded")
+	ErrWrongDateInterval = errors.New("wrong date interval")
+)
 
-	return NasaParser{
+type NasaPicture struct {
+	Copyright      string `json:"contacts"`
+	Date           string `json:"date"`
+	Explanation    string `json:"explanation"`
+	HdURL          string `json:"hdurl"`
+	MediaType      string `json:"media_type"`
+	ServiceVersion string `json:"service_version"`
+	Title          string `json:"title"`
+	URL            string `json:"url"`
+}
+
+func NewNasaParser(logger *logrus.Entry, apiKey string, apiTemplateURL string, httpClient HTTPClient) *NasaParser {
+
+	return &NasaParser{
+		logger: logger,
 		apiKey: apiKey,
 		apiURL: apiTemplateURL,
 		httpClient:  httpClient,
 	}
 }
 
-func(p NasaParser) Parse(targetDate string) (string, error) {
+func(p *NasaParser) Parse(targetDate string) (string, error) {
 	resp, err := p.httpClient.Get(fmt.Sprintf(p.apiURL, p.apiKey, targetDate))
 	if err != nil {
 		return "", err
@@ -36,14 +57,22 @@ func(p NasaParser) Parse(targetDate string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		closeErr := resp.Body.Close()
+		if closeErr != nil {
+			p.logger.WithError(closeErr).Warnf("body close error")
+		}
+	}()
 
 	if resp.StatusCode == 429 {
-		return "", OverRateLimit
+		return "", ErrOverRateLimit
 	}
 
-	var picture models.NasaPicture
+	if resp.StatusCode == 400 {
+		return "", ErrWrongDateInterval
+	}
 
+	var picture NasaPicture
 	err = json.Unmarshal(body, &picture)
 	if err != nil {
 		return "", err

@@ -2,6 +2,7 @@ package parsers
 
 import (
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"nasa/mocks"
 	"net/http"
@@ -25,5 +26,52 @@ func TestNasaParser(t *testing.T) {
 
 	if  url != "https://apod.nasa.gov/apod/image/1912/TaurusAbolfath1024.jpg" {
 		t.Errorf("url: %s", url)
+	}
+}
+
+func TestNasaParserWrongInterval(t *testing.T) {
+	json := `{code: 400, msg: "Date must be between Jun 16, 1995 and Jun 20, 2021.",service_version: "v1"}`
+	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
+
+	client := &mocks.MockClient{}
+	client.GetFunc = func(url string) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: 400,
+			Body: r,
+		}, nil
+	}
+
+	inputDate := "1995-05-11"
+	parser := NewNasaParser("", "", client)
+	_, err := parser.Parse(inputDate)
+
+	if  !errors.Is(err, ErrWrongDateInterval) {
+		t.Error("Wrong date interval error expected")
+	}
+}
+
+func TestNasaParserOverRateLimit(t *testing.T) {
+	json := `<html>
+  <body>
+    <h1>OVER_RATE_LIMIT</h1>
+    <p>You have exceeded your rate limit. Try again later or contact us at https:&#x2F;&#x2F;api.nasa.gov:443&#x2F;contact&#x2F; for assistance</p>
+  </body>
+</html>`
+	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
+
+	client := &mocks.MockClient{}
+	client.GetFunc = func(url string) (*http.Response, error) {
+		return &http.Response{
+			StatusCode: 429,
+			Body: r,
+		}, nil
+	}
+
+	inputDate := "2012-05-11"
+	parser := NewNasaParser("", "", client)
+	_, err := parser.Parse(inputDate)
+
+	if  !errors.Is(err, ErrOverRateLimit) {
+		t.Error("Over rate limit error expected")
 	}
 }
