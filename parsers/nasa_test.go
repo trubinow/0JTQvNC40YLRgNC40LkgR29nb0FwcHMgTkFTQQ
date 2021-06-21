@@ -3,11 +3,21 @@ package parsers
 import (
 	"bytes"
 	"errors"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"nasa/mocks"
 	"net/http"
 	"testing"
 )
+var logger *logrus.Logger
+var contextLogger *logrus.Entry
+
+func init()  {
+	logger = logrus.New()
+	contextLogger = logger.WithFields(logrus.Fields{
+		"cmd": "test-nasa-parser",
+	})
+}
 
 func TestNasaParser(t *testing.T) {
 	json := `{"copyright":"Amir H. Abolfath","date":"2019-12-06","explanation":"This frame.","hdurl":"https://apod.nasa.gov/apod/image/1912/TaurusAbolfath.jpg","media_type":"image","service_version":"v1","title":"Pleiades to Hyades","url":"https://apod.nasa.gov/apod/image/1912/TaurusAbolfath1024.jpg"}`
@@ -21,7 +31,7 @@ func TestNasaParser(t *testing.T) {
 		}, nil
 	}
 
-	parser := NewNasaParser("", "", client)
+	parser := NewNasaParser(contextLogger, "", "", client)
 	url, _ := parser.Parse("2012-06-11")
 
 	if  url != "https://apod.nasa.gov/apod/image/1912/TaurusAbolfath1024.jpg" {
@@ -42,7 +52,7 @@ func TestNasaParserWrongInterval(t *testing.T) {
 	}
 
 	inputDate := "1995-05-11"
-	parser := NewNasaParser("", "", client)
+	parser := NewNasaParser(contextLogger, "", "", client)
 	_, err := parser.Parse(inputDate)
 
 	if  !errors.Is(err, ErrWrongDateInterval) {
@@ -68,7 +78,7 @@ func TestNasaParserOverRateLimit(t *testing.T) {
 	}
 
 	inputDate := "2012-05-11"
-	parser := NewNasaParser("", "", client)
+	parser := NewNasaParser(contextLogger, "", "", client)
 	_, err := parser.Parse(inputDate)
 
 	if  !errors.Is(err, ErrOverRateLimit) {

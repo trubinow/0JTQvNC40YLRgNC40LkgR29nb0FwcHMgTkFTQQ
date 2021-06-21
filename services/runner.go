@@ -6,10 +6,12 @@ import (
 	"sync"
 )
 
+//Parser obtains nasa api data
 type Parser interface {
 	Parse(targetDate string) (string, error)
 }
 
+//Runner starts parsing process
 type Runner struct {
 	blocked bool
 	logger    *logrus.Entry
@@ -17,7 +19,7 @@ type Runner struct {
 	concurrent chan struct{}
 }
 
-//NewRunner constructor
+//NewRunner creates new parser runner
 func NewRunner(logger *logrus.Entry, concurrent chan struct{}, parser Parser) *Runner {
 	return &Runner{
 		blocked: false,
@@ -35,6 +37,7 @@ func (r *Runner) SetBlocked(b bool) {
 	r.blocked = b
 }
 
+//Run starts parse process
 func (r *Runner) Run(dates []string) ([]string, error) {
 
 	wg := sync.WaitGroup{}

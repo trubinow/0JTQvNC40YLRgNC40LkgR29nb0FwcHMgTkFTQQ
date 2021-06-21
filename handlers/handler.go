@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"github.com/sirupsen/logrus"
 	"nasa/middlewares"
-	"nasa/models"
 	"nasa/parsers"
 	"nasa/utils"
 	"net/http"
 )
 
+//Response wraps http response
 type Response struct {
-	URLS []string `json:"urls"`
+	URLS []string `json:"urls,omitempty"`
 	Error string `json:"error,omitempty"`
 }
 
@@ -19,18 +19,19 @@ type ErrResponse struct {
 	Error string `json:"error"`
 }
 
+//Runner interface
 type Runner interface {
 	Run(dates []string) ([]string, error)
 	Blocked() bool
 }
 
-//Handler type
+//Handler is handler for http requests
 type Handler struct {
 	logger     *logrus.Entry
 	runner     Runner
 }
 
-//NewHandler constructor
+//NewHandler creates new http handler
 func NewHandler(logger *logrus.Entry, runner Runner) *Handler {
 	return &Handler{
 		logger:     logger,
@@ -38,7 +39,7 @@ func NewHandler(logger *logrus.Entry, runner Runner) *Handler {
 	}
 }
 
-//Status function
+//Status returns status of the service
 func (h *Handler) Status(w http.ResponseWriter, r *http.Request) {
 	_, err := w.Write([]byte("OK"))
 	if err != nil {
@@ -46,7 +47,7 @@ func (h *Handler) Status(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//Status function
+//Pictures returns pictures result data set
 func (h *Handler) Pictures(w http.ResponseWriter, r *http.Request) {
 
 	props, ok := r.Context().Value("props").(middlewares.Request)
@@ -71,7 +72,7 @@ func (h *Handler) Pictures(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Infof("Dates: %v", dates)
 	images, err := h.runner.Run(dates)
-	var response = models.Response{URLS: images}
+	var response = Response{URLS: images}
 	if err != nil {
 		response.Error = err.Error()
 	}
@@ -82,7 +83,7 @@ func (h *Handler) Pictures(w http.ResponseWriter, r *http.Request) {
 
 	res, err := json.Marshal(response)
 	if err != nil {
-		res, _ = json.Marshal(models.ErrResponse{Error: err.Error()})
+		res, _ = json.Marshal(ErrResponse{Error: err.Error()})
 	}
 
 	_, err = w.Write(res)

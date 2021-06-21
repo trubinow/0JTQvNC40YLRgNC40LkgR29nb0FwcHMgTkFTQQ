@@ -34,7 +34,7 @@ func main() {
 
 	var httpClient = &http.Client{}
 	concurrent := make(chan struct{}, concurrentLimit)
-	parser := parsers.NewNasaParser(apiKey, apiUrlTemplate, httpClient)
+	parser := parsers.NewNasaParser(contextLogger, apiKey, apiUrlTemplate, httpClient)
 	runner := services.NewRunner(contextLogger, concurrent, parser)
 	handler := handlers.NewHandler(contextLogger, runner)
 	mw := middlewares.NewMiddleware(contextLogger)

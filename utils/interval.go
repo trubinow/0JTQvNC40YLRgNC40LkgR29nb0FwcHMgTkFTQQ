@@ -22,7 +22,7 @@ func init() {
 	}
 }
 
-//Interval
+//Interval returns dates slice in string format between start-date and end-date. Date output and input format is 2006-01-02
 func Interval(start string, end string) ([]string, error) {
 	startDate, err := time.Parse("2006-01-02", start)
 	if err != nil {

@@ -6,21 +6,26 @@ import (
 	"net/http"
 )
 
+//Middleware is http middleware
 type Middleware struct {
 	logger    *logrus.Entry
 }
 
+//NewMiddleware creates new http middleware
 func NewMiddleware(logger *logrus.Entry) *Middleware {
 	return &Middleware{
 		logger: logger,
 	}
 }
 
+//Request wraps user query parameters
 type Request struct {
 	StartDate string `json:"start_date"`
 	EndDate string `json:"end_date"`
 }
 
+//ValidateParameters validates start_date, end_date query parameters(/pictures endpoint only)
+//and stores them to request context.props
 func(m *Middleware) ValidateParameters() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
