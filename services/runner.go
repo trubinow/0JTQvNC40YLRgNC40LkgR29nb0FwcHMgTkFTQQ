@@ -14,6 +14,7 @@ type Parser interface {
 //Runner starts parsing process
 type Runner struct {
 	blocked    bool
+	err	error
 	logger     *logrus.Entry
 	parser     Parser
 	concurrent chan struct{}
@@ -37,6 +38,14 @@ func (r *Runner) SetBlocked(b bool) {
 	r.blocked = b
 }
 
+func (r *Runner) Error() error {
+	return r.err
+}
+
+func (r *Runner) SetError(err error) {
+	r.err = err
+}
+
 //Run starts parse process
 func (r *Runner) Run(dates []string) ([]string, error) {
 	r.SetBlocked(false)
@@ -44,7 +53,7 @@ func (r *Runner) Run(dates []string) ([]string, error) {
 	var images []string
 	for _, d := range dates {
 
-		if r.Blocked() {
+		if r.Blocked() || r.Error() != nil {
 			break
 		}
 
@@ -58,8 +67,9 @@ func (r *Runner) Run(dates []string) ([]string, error) {
 				if parseErr == parsers.ErrOverRateLimit {
 					r.SetBlocked(true)
 				}
+				r.SetError(parseErr)
 			} else {
-				r.logger.Infof("Date: %s - Output image: %s", dateParam, val)
+				r.logger.Infof("date: %s - output image: %s", dateParam, val)
 				images = append(images, val)
 			}
 
@@ -68,5 +78,5 @@ func (r *Runner) Run(dates []string) ([]string, error) {
 	}
 	wg.Wait()
 
-	return images, nil
+	return images, r.Error()
 }

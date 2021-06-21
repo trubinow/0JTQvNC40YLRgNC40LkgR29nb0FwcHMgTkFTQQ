@@ -12,6 +12,7 @@ import (
 var (
 	ErrOverRateLimit     = errors.New("over rate limit exceeded")
 	ErrWrongDateInterval = errors.New("wrong date interval")
+	ErrUnknown = errors.New("unknown error")
 )
 
 //NasaPicture nasa api data item
@@ -61,12 +62,12 @@ func (p *NasaParser) Parse(targetDate string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer func() {
-		closeErr := resp.Body.Close()
-		if closeErr != nil {
-			p.logger.WithError(closeErr).Warnf("body close error")
-		}
-	}()
+	//defer func() {
+	//	closeErr := resp.Body.Close()
+	//	if closeErr != nil {
+	//		p.logger.WithError(closeErr).Warnf("body close error")
+	//	}
+	//}()
 
 	if resp.StatusCode == 429 {
 		return "", ErrOverRateLimit

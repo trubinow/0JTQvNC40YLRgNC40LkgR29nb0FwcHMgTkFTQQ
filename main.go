@@ -32,8 +32,9 @@ func main() {
 		logger.Fatalf("CONCURRENT_REQUESTS conversion to int error(%v) or equal to 0", err)
 	}
 
-	var httpClient = &http.Client{}
 	concurrent := make(chan struct{}, concurrentLimit)
+
+	httpClient := &http.Client{}
 	parser := parsers.NewNasaParser(contextLogger, apiKey, apiUrlTemplate, httpClient)
 	runner := services.NewRunner(contextLogger, concurrent, parser)
 	handler := handlers.NewHandler(contextLogger, runner)

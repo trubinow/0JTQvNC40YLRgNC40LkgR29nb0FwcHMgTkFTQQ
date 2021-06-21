@@ -23,6 +23,7 @@ type ErrResponse struct {
 type Runner interface {
 	Run(dates []string) ([]string, error)
 	Blocked() bool
+	Error() error
 }
 
 //Handler is handler for http requests
@@ -73,16 +74,18 @@ func (h *Handler) Pictures(w http.ResponseWriter, r *http.Request) {
 	h.logger.Infof("Dates: %v", dates)
 	images, err := h.runner.Run(dates)
 	var response = Response{URLS: images}
-	if err != nil {
-		response.Error = err.Error()
-	}
 
 	if h.runner.Blocked() {
+		w.WriteHeader(429)
 		response.Error = parsers.ErrOverRateLimit.Error()
+	} else if err != nil {
+		w.WriteHeader(400)
+		response.Error = parsers.ErrUnknown.Error()
 	}
 
 	res, err := json.Marshal(response)
 	if err != nil {
+		w.WriteHeader(400)
 		res, _ = json.Marshal(ErrResponse{Error: err.Error()})
 	}
 

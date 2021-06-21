@@ -5,4 +5,6 @@ COPY . .
 
 RUN make build-app
 
+EXPOSE 8080
+
 CMD ["build/url-collector"]

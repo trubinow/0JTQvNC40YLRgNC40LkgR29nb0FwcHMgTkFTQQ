@@ -20,6 +20,7 @@ func init() {
 	})
 }
 
+//TestNasaParser tests case when http client returns good response(statusCode=200)
 func TestNasaParser(t *testing.T) {
 	json := `{"copyright":"Amir H. Abolfath","date":"2019-12-06","explanation":"This frame.","hdurl":"https://apod.nasa.gov/apod/image/1912/TaurusAbolfath.jpg","media_type":"image","service_version":"v1","title":"Pleiades to Hyades","url":"https://apod.nasa.gov/apod/image/1912/TaurusAbolfath1024.jpg"}`
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
@@ -33,13 +34,15 @@ func TestNasaParser(t *testing.T) {
 	}
 
 	parser := NewNasaParser(contextLogger, "", "", client)
-	url, _ := parser.Parse("2012-06-11")
+	url, err := parser.Parse("2012-06-11")
 
-	if url != "https://apod.nasa.gov/apod/image/1912/TaurusAbolfath1024.jpg" {
+	if err == nil && url != "https://apod.nasa.gov/apod/image/1912/TaurusAbolfath1024.jpg" {
 		t.Errorf("url: %s", url)
 	}
 }
 
+//TestNasaParserWrongInterval tests case when http client returns bad response(statusCode=400) in reply to wrong
+//date interval
 func TestNasaParserWrongInterval(t *testing.T) {
 	json := `{code: 400, msg: "Date must be between Jun 16, 1995 and Jun 20, 2021.",service_version: "v1"}`
 	r := ioutil.NopCloser(bytes.NewReader([]byte(json)))
@@ -61,6 +64,7 @@ func TestNasaParserWrongInterval(t *testing.T) {
 	}
 }
 
+//TestNasaParserOverRateLimit tests case when http client returns OVER_RATE_LIMIT error(statusCode=429)
 func TestNasaParserOverRateLimit(t *testing.T) {
 	json := `<html>
   <body>
