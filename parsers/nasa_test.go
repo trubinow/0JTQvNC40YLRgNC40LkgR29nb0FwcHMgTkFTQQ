@@ -9,10 +9,11 @@ import (
 	"net/http"
 	"testing"
 )
+
 var logger *logrus.Logger
 var contextLogger *logrus.Entry
 
-func init()  {
+func init() {
 	logger = logrus.New()
 	contextLogger = logger.WithFields(logrus.Fields{
 		"cmd": "test-nasa-parser",
@@ -27,14 +28,14 @@ func TestNasaParser(t *testing.T) {
 	client.GetFunc = func(url string) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: 200,
-			Body: r,
+			Body:       r,
 		}, nil
 	}
 
 	parser := NewNasaParser(contextLogger, "", "", client)
 	url, _ := parser.Parse("2012-06-11")
 
-	if  url != "https://apod.nasa.gov/apod/image/1912/TaurusAbolfath1024.jpg" {
+	if url != "https://apod.nasa.gov/apod/image/1912/TaurusAbolfath1024.jpg" {
 		t.Errorf("url: %s", url)
 	}
 }
@@ -47,7 +48,7 @@ func TestNasaParserWrongInterval(t *testing.T) {
 	client.GetFunc = func(url string) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: 400,
-			Body: r,
+			Body:       r,
 		}, nil
 	}
 
@@ -55,7 +56,7 @@ func TestNasaParserWrongInterval(t *testing.T) {
 	parser := NewNasaParser(contextLogger, "", "", client)
 	_, err := parser.Parse(inputDate)
 
-	if  !errors.Is(err, ErrWrongDateInterval) {
+	if !errors.Is(err, ErrWrongDateInterval) {
 		t.Error("Wrong date interval error expected")
 	}
 }
@@ -73,7 +74,7 @@ func TestNasaParserOverRateLimit(t *testing.T) {
 	client.GetFunc = func(url string) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: 429,
-			Body: r,
+			Body:       r,
 		}, nil
 	}
 
@@ -81,7 +82,7 @@ func TestNasaParserOverRateLimit(t *testing.T) {
 	parser := NewNasaParser(contextLogger, "", "", client)
 	_, err := parser.Parse(inputDate)
 
-	if  !errors.Is(err, ErrOverRateLimit) {
+	if !errors.Is(err, ErrOverRateLimit) {
 		t.Error("Over rate limit error expected")
 	}
 }

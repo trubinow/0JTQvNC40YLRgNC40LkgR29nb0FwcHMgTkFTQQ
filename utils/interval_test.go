@@ -10,9 +10,9 @@ import (
 func TestInterval(t *testing.T) {
 	cases := []struct {
 		Start  string
-		End string
+		End    string
 		Result []string
-		Err   error
+		Err    error
 	}{
 		{
 			"2021-05-30", "2021-06-02", []string{"2021-05-30", "2021-05-31", "2021-06-01", "2021-06-02"}, nil,
@@ -47,13 +47,13 @@ func TestInterval(t *testing.T) {
 		},
 
 		{
-			"2020-06-11", time.Now().Add(24*time.Hour).Format("2006-01-02"), []string{}, ErrWrongInterval,
+			"2020-06-11", time.Now().Add(24 * time.Hour).Format("2006-01-02"), []string{}, ErrWrongInterval,
 		},
 	}
 
 	for _, d := range cases {
 		result, err := Interval(d.Start, d.End)
-		if  !errors.Is(err, d.Err) || !reflect.DeepEqual(result, d.Result) {
+		if !errors.Is(err, d.Err) || !reflect.DeepEqual(result, d.Result) {
 			t.Errorf("Error: %v Interval(%s,%s) = %v; want %v", err, d.Start, d.End, result, d.Result)
 		}
 	}

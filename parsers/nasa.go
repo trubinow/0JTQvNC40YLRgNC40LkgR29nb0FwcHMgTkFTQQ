@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	ErrOverRateLimit = errors.New("over rate limit exceeded")
+	ErrOverRateLimit     = errors.New("over rate limit exceeded")
 	ErrWrongDateInterval = errors.New("wrong date interval")
 )
 
@@ -33,25 +33,25 @@ type HTTPClient interface {
 
 //NasaParser is Nasa api parser
 type NasaParser struct {
-	logger *logrus.Entry
-	apiKey string
-	apiURL string
-	httpClient  HTTPClient
+	logger     *logrus.Entry
+	apiKey     string
+	apiURL     string
+	httpClient HTTPClient
 }
 
 //NewNasaParser creates new nasa api parser
 func NewNasaParser(logger *logrus.Entry, apiKey string, apiTemplateURL string, httpClient HTTPClient) *NasaParser {
 
 	return &NasaParser{
-		logger: logger,
-		apiKey: apiKey,
-		apiURL: apiTemplateURL,
-		httpClient:  httpClient,
+		logger:     logger,
+		apiKey:     apiKey,
+		apiURL:     apiTemplateURL,
+		httpClient: httpClient,
 	}
 }
 
 //Parse requests nasa data, parses it and returns picture url
-func(p *NasaParser) Parse(targetDate string) (string, error) {
+func (p *NasaParser) Parse(targetDate string) (string, error) {
 	resp, err := p.httpClient.Get(fmt.Sprintf(p.apiURL, p.apiKey, targetDate))
 	if err != nil {
 		return "", err

@@ -13,19 +13,19 @@ type Parser interface {
 
 //Runner starts parsing process
 type Runner struct {
-	blocked bool
-	logger    *logrus.Entry
-	parser    Parser
+	blocked    bool
+	logger     *logrus.Entry
+	parser     Parser
 	concurrent chan struct{}
 }
 
 //NewRunner creates new parser runner
 func NewRunner(logger *logrus.Entry, concurrent chan struct{}, parser Parser) *Runner {
 	return &Runner{
-		blocked: false,
-		logger:    logger,
+		blocked:    false,
+		logger:     logger,
 		concurrent: concurrent,
-		parser:    parser,
+		parser:     parser,
 	}
 }
 
@@ -59,7 +59,7 @@ func (r *Runner) Run(dates []string) ([]string, error) {
 					r.SetBlocked(true)
 				}
 			} else {
-				r.logger.Infof("Date: %s - Output image: %s",dateParam, val)
+				r.logger.Infof("Date: %s - Output image: %s", dateParam, val)
 				images = append(images, val)
 			}
 

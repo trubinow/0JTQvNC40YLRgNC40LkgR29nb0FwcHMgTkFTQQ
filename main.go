@@ -44,7 +44,6 @@ func main() {
 	r.HandleFunc("/status", handler.Status)
 	r.HandleFunc("/pictures", handler.Pictures)
 
-
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         fmt.Sprintf("0.0.0.0:%s", port),

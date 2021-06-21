@@ -11,8 +11,8 @@ import (
 
 //Response wraps http response
 type Response struct {
-	URLS []string `json:"urls,omitempty"`
-	Error string `json:"error,omitempty"`
+	URLS  []string `json:"urls,omitempty"`
+	Error string   `json:"error,omitempty"`
 }
 
 type ErrResponse struct {
@@ -27,15 +27,15 @@ type Runner interface {
 
 //Handler is handler for http requests
 type Handler struct {
-	logger     *logrus.Entry
-	runner     Runner
+	logger *logrus.Entry
+	runner Runner
 }
 
 //NewHandler creates new http handler
 func NewHandler(logger *logrus.Entry, runner Runner) *Handler {
 	return &Handler{
-		logger:     logger,
-		runner:     runner,
+		logger: logger,
+		runner: runner,
 	}
 }
 
